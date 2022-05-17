@@ -14,7 +14,6 @@ library(rgdal)
 library(dplyr)
 library(tmap)
 library(tmaptools)
-library(R6)
 library(pryr)
 
 #example cluster 1
@@ -78,10 +77,11 @@ fwd_dist <- function(c,d){
   circ <- c
   while(circ!=d){
     count = count + 1
-    message("Work in progress")
-  }
+    message("work in progress") #I'm not sure how to implement the circ = circ.s | In R there is no doubly linked list.
+    }
   count
-}
+  }
+  
 
 #function fwd_dist(c::Circle, d::Circle) #number of "s"'s required to move fwd from c to d
 #count = 0
@@ -113,7 +113,7 @@ fwd_remove <- function(c,d){
   if (identical(c,d)){
     stop("Circles are the same.")
   }else if(TRUE==TRUE){ #placeholder
-    stop("Circlese are consecutive.")
+    stop("Circles are consecutive.")
   }else{
     message("unfinished")
   }
@@ -185,13 +185,14 @@ place_starting_three <- function(C1,C2,C3){
 }
 
 closest <- function(c){
-  closest <- C
+  closest <- c
   message("Work in progress")
 }
 
 closest_place <- function(c,d){
-  closest <- C
+  closest <- c
   message("Work in progress")
+  closest
 }
 
 do_intersect <- function(c,d){ #returns TRUE or FALSE
@@ -210,8 +211,18 @@ overlap_check <- function(Cm,Cn,C){
 }
 
 circle_layout <- function(input_rad_vec, order = TRUE, try_place = TRUE){
-  if (Order){
+  if (order){
     input_rad_vec = reverse(sort(input_rad_vec))
+  }
+  
+  circles <- "placeholder"
+  
+  if(length(circles) == 1){
+    circles[[2]]
+    circles[[3]]
+    circles[[6]]
+  }else if(length(circles)==2){
+    placeholder = "placeholder"
   }
 
   message("work in progress")
