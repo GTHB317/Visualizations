@@ -10,7 +10,6 @@ library(ggraph)
 library(reshape2)
 library(tidyverse)
 library(readr)
-library(rgdal)
 library(dplyr)
 library(tmap)
 library(tmaptools)
@@ -222,70 +221,65 @@ circle_layout <- function(input_rad_vec, order = TRUE, try_place = TRUE){
     circles[[3]]
     circles[[6]]
   }else if(length(circles)==2){
-    placeholder = "placeholder"
-  }
-
-  message("work in progress")
-}
-
-#Original Julia code below
-#function circle_layout(input_rad_vec::Array{Float64,1}; order = true, try_place = true)
-    #if order
-        #input_rad_vec = reverse(sort(input_rad_vec))
+    
+    #circles[1].x = - circles[1].rad
+    #circles[2].x = circles[2].rad
+    #return [[c.x for c in circles],[c.y for c in circles],[c.rad for c in circles]]
     #end
-
-    # Initialise the circles with radii (not areas) as specified in input_rad_vec, and no boundary relations.
-    #circles = [Circle("Circle_$(i)", 0.0, 0.0, input_rad_vec[i],nothing,nothing) for i in 1:length(input_rad_vec)]
-
-    #Taking care of "degenerate" cases when there are one or two circles
-
-    #if length(circles) == 1
-        #return [[c.x for c in circles],[c.y for c in circles],[c.rad for c in circles]]
-    #elseif length(circles) == 2
-        #circles[1].x = - circles[1].rad
-        #circles[2].x = circles[2].rad
-        #return [[c.x for c in circles],[c.y for c in circles],[c.rad for c in circles]]
-    #end
-
+    
     # Place the first three circles to be mutually tangent, with centroid the origin.
     #place_starting_three(circles[1], circles[2], circles[3])
-
-    # Initialise the boundary
-    #init_boundary(circles[1:3])
-
-    #= for i in 1:length(circles)
-        #println(circles[i].name,":",circles[i].rad)
-    #end =#
-    
-    #Loop through the remaining circles, fitting them
-    #j = 4
-    #while j <= length(circles)
-        # Initial attempt to fit Circle_j
-        #if try_place
-            #cl = closest_place(circles[j-1], circles[j])
-        #else
-            #cl = closest(circles[j-1])
-        #end
-        #fit_tang_circle!(cl, cl.s, circles[j])
-
-        # Check for overlaps and update, refit and recheck until "clear"
-        #check = overlap_check(cl, cl.s, circles[j])
-        #if check == "clear"
-            #insert_circle!(cl, cl.s, circles[j])
-            #j += 1
-        #else
-            #while check != "clear"
-                #Cm = check[1]
-                #Cn = check[2]
-                #fwd_remove!(Cm,Cn)
-                #fit_tang_circle!(Cm,Cn,circles[j])
-                #check = overlap_check(Cm,Cn,circles[j])
-                #if check == "clear"
-                    #insert_circle!(Cm,Cn, circles[j])
-                    #j += 1
-                #end
-            #end
-        #end
+    message("placeholder")
+  }
+  
+  place_starting_three()
+  
+  # Place the first three circles to be mutually tangent, with centroid the origin.
+  #place_starting_three(circles[1], circles[2], circles[3])
+  
+  init_boundary()
+  
+  # Initialise the boundary
+  #init_boundary(circles[1:3])
+  
+  for(i in 1:length(circles)){
+    print("placeholder")
+  }
+  
+  #= for i in 1:length(circles)
+  #println(circles[i].name,":",circles[i].rad)
+  #end =#
+  
+  j <- 4
+  while(j <= length(circles)){
+    message("work in progress")
+    #if try_place
+    #cl = closest_place(circles[j-1], circles[j])
+    #else
+    #cl = closest(circles[j-1])
     #end
-    #return [[c.x for c in circles],[c.y for c in circles],[c.rad for c in circles] ]
-#end
+  }
+  
+  fit_tang_circle(cl, cl.s, circles[j])
+
+  check <- overlap_check(cl, cl.s, circles[j])
+  if (check == "clear"){
+    insert_circle(cl, cl.s, circles[j])
+    j = j+1
+  }else{
+    while(check != "clear"){
+      Cm <- check[1]
+      Cn <- check[2]
+      fwd_remove(Cm,Cn)
+      fit_tang_circle(Cm,Cn,circles[j])
+      check <- overlap_check(Cm,Cn,circles[j])
+      if(check == "clear"){
+        insert_circle(Cm,Cn, circles[j])
+        j <- j+1
+      }
+    }
+  }
+  
+  message("[[c[[2]] for c in circles],[c[[3]] for c in circles],[c[c[[6]] for c in circles] ]")
+}
+
