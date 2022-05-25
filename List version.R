@@ -1,6 +1,8 @@
 #This version takes in lists that must be ordered as such:
 #Area, x cord of centroid location, y cord of centroid location, hexadecimal color, label, and radius
-#Am not too sure yet if a list of lists in R is equivalent to a doubly linked list. I am awaiting some help about how to handle this in R, hopefully.
+#For quite a few of these functions, there is an "subscript out of bounds" error. 
+#I'm pretty sure its because of the lack of predessesor and sucessors.
+#The next thing I'll do is find a way to fix this. Perhaps have the init_boundary apply itself somehow several times?
 
 #load packages
 library(ggplot2)
@@ -16,36 +18,42 @@ library(tmaptools)
 library(pryr)
 
 #example cluster 1
-C1 <- list(AreaA, xA, yA, ColorA, LabelA, RadiusA)
 AreaA <- pi*25
 xA <- 5
 yA <- 7
 ColorA <- '#FF0000'
 LabelA <- "reddy"
 RadiusA <- 5
+p1 <- list()
+s1 <- list()
+C1 <- list(AreaA, xA, yA, ColorA, LabelA, RadiusA,p1,s1)
 
 #example cluster 2
-C2 <- list(AreaB, xB, yB, ColorB, LabelB, RadiusB)
 AreaB <- pi*36
 xB <- 4
 yB <- 5
 ColorB <- '#00FF00'
 LabelB <- "greeny"
 RadiusB<- 6
+p2 <- list()
+s2 <- list()
+C2 <- list(AreaB, xB, yB, ColorB, LabelB, RadiusB,p2,s2)
 
 #example cluster 3
-C3 <- list(AreaC, xB, yB, ColorC, LabelC, RadiusC)
 AreaC <- pi*9
 xC <- 100.0
 yC <- 400.0
 ColorC <- '#0000FF'
 LabelC <- "Qile's cluster"
 RadiusC <- 3
+p3 <- list()
+s3 <- list()
+C3 <- list(AreaC, xB, yB, ColorC, LabelC, RadiusC,p3,s3)
 
-#example list that will be used later for this script. 
-V <- list(ClusterA, ClusterB, ClusterC)
+#example list of clusters used here
+a <- list(C1,C2,C3)
 
-#radius from area  
+#simple radius from area function  
 Rfa<-function(a){
   rfa<-function(a){
     sqrt(a/pi)
@@ -53,35 +61,26 @@ Rfa<-function(a){
   unlist(lapply(a,rfa))
 }
 
-#the doubly linked list structure doesn't really exist in R, but  I wonder whether or not a list of ordered lists works as well? Also, is it a circular linked list or a linear one?
+init_boundary <- function(a){ #where a is a list of circle lists.
+  a[[length(a)]][[8]] <- a[[1]]
+  a[[1]][[7]] <- a[[length(a)]]
+  for (i in 1:(length(a)-1))
+    {a[[i]][[8]] <- a[[i+1]]
+    a[[i+1]][[7]] <- a[[i]]}
+  } #It works but for the predessecors and sucessors made, they dont have predessesors and sucessors.
 
-init_boundary <- function(a){
-  for (i in 1:length(a)-1){
-    message("Work in progress")
-  }
-}
-
-#original julia code:
-#function init_boundary(a::Array{Circle,1})
-#for i in 1:length(a)-1
-#a[i].s = a[i+1]
-#a[i+1].p = a[i]
-#end
-#a[length(a)].s = a[1]
-#a[1].p = a[length(a)]
-#end
-
+# BELOW FUNCTION DOESNT WORK PROPERLY______________________________
 fwd_dist <- function(c,d){
   count <- 0
   circ <- c
-  while(circ!=d){
+  while(identical(circ,d)==FALSE){
     count = count + 1
-    message("work in progress") #I'm not sure how to implement the circ = circ.s | In R there is no doubly linked list.
-    }
-  count
+    circ = circ[[8]]
   }
-  
+  count
+} #error: subscript out of bounds
 
+#original julia code
 #function fwd_dist(c::Circle, d::Circle) #number of "s"'s required to move fwd from c to d
 #count = 0
 #circ = c
@@ -90,31 +89,33 @@ fwd_dist <- function(c,d){
 #circ = circ.s
 #end
 #return count
-#end
+#end_______________________________________________________________
 
 insert_circle <- function(c,d,e){
-  message("Work in progress")
-}
+  if((identical(c[[8]],d) == FALSE)||(identical(d[[7]],c)==FALSE)){
+    stop("Two circles not adjacent")
+  }else{
+    c[[8]] <- e
+    e[[7]] <- c
+    d[[7]] <- e
+    e[[8]] <- d
+  }
+} #I AM NOT SURE IF THIS WORKS BECAUSE I HAVENT TESTED WITH MORE CIRCLES, BUT AT LEAST THE LOGICAL STATEMENT WORKS.
 
-#function insert_circle!(c::Circle,d::Circle,e::Circle)
-#if (c.s != d)||(d.p != c)
-#error("Two circles not adjacent.")
-#else
-  #c.s = e
-#e.p = c
-#d.p = e
-#e.s = d
-#end
-#end
-
-#forward remove: removes the segment between c,d, exclusive,  as one moves fwd
+#forward remove: removes the segment between c,d, exclusive,  as one moves fwd. ALSO DOESNT WORK_____________
 fwd_remove <- function(c,d){
   if (identical(c,d)){
     stop("Circles are the same.")
-  }else if(TRUE==TRUE){ #placeholder
+  }else if(identical(c[[7]],d)){ 
     stop("Circles are consecutive.")
   }else{
-    message("unfinished")
+    circ <- c[[8]]
+    #removed <- c()
+    while(identical(circ,d)==FALSE){
+      circ[[7]][[8]] <- circ[[8]]
+      circ[[8]][[7]] <- circ[[7]]
+      circ <- circ[[8]] #Error in circ[[8]] : subscript out of bounds
+    }
   }
 }
 
@@ -125,13 +126,13 @@ fwd_remove <- function(c,d){
 #elseif c.s == d
 #error("Circles are consecutive.")
 #else
-  #circ = c.s
+#circ = c.s
 #removed = []
 #while circ != d
 #circ.p.s = circ.s
 #circ.s.p = circ.p
 #circ = circ.s
-#______________________________________________
+#____________________________________________________________________________________________________________
 
 #fit tangent circle function
 fit_tang_circle <- function(C1,C2,C3){
@@ -148,12 +149,12 @@ fit_tang_circle <- function(C1,C2,C3){
   if (dist > (r1 + r2 + 2*r)){
     stop("Gap too large.")}
   else{dist}
-
+  
   cos_sig = (x2 - x1)/dist
   sin_sig = (y2 - y1)/dist
   cos_gam = (dist^2 + (r + r1)^2 - (r + r2)^2)/(2*dist*(r + r1))
   sin_gam = sqrt(1 - (cos_gam)^2)
-
+  
   C3[[2]] = x1 + (r + r1)*(cos_sig*cos_gam - sin_sig*sin_gam)
   C3[[3]] = y1 + (r + r1)*(cos_sig*sin_gam + sin_sig*cos_gam)
   C3
@@ -183,10 +184,20 @@ place_starting_three <- function(C1,C2,C3){
   C3[[3]] = C3[[3]] - centroid_y
 }
 
+#functin doesnt work:Error in c[[2]] : subscript out of bounds__________________
 closest <- function(c){
   closest <- c
-  message("Work in progress")
+  circ <- c[[8]]
+  while(identical(circ,c)==FALSE){
+    if(centre_dist(closest) > centre_dist(circ)){
+      closest <- circ
+    }
+    circ <- circ[[8]]
+  }
+  closest
 }
+#_______________________________________________________________________________
+
 
 closest_place <- function(c,d){
   closest <- c
@@ -261,7 +272,7 @@ circle_layout <- function(input_rad_vec, order = TRUE, try_place = TRUE){
   }
   
   fit_tang_circle(cl, cl.s, circles[j])
-
+  
   check <- overlap_check(cl, cl.s, circles[j])
   if (check == "clear"){
     insert_circle(cl, cl.s, circles[j])
@@ -282,4 +293,7 @@ circle_layout <- function(input_rad_vec, order = TRUE, try_place = TRUE){
   
   message("[[c[[2]] for c in circles],[c[[3]] for c in circles],[c[c[[6]] for c in circles] ]")
 }
+
+#for after all previous functions are done, then I will move onto the next step which is visualizing the results from the circle_layout function.
+#it will definetely be done with ggplot and also the packcircles package, with a script similar to the "simple script" in the same Repo.
 
