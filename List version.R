@@ -65,9 +65,9 @@ init_boundary <- function(a){ #where a is a list of circle lists.
   a[[length(a)]][[8]] <- a[[1]]
   a[[1]][[7]] <- a[[length(a)]]
   for (i in 1:(length(a)-1))
-    {a[[i]][[8]] <- a[[i+1]]
-    a[[i+1]][[7]] <- a[[i]]}
-  } #It works but for the predessecors and sucessors made, they dont have predessesors and sucessors.
+  {a[[i]][[8]] <- a[[i+1]]
+  a[[i+1]][[7]] <- a[[i]]}
+} #It works but for the predessecors and sucessors made, they dont have predessesors and sucessors.
 
 # BELOW FUNCTION DOESNT WORK PROPERLY______________________________
 fwd_dist <- function(c,d){
@@ -201,15 +201,23 @@ closest <- function(c){
 
 closest_place <- function(c,d){
   closest <- c
-  message("Work in progress")
+  circ <- c[[8]]
+  while(identical(circ,c)==FALSE){
+    if(centre_dist(fit_tang_circle(closest, closest.s, d)) > centre_dist(fit_tang_circle(circ, circ.s, d))){
+      closest <- circ
+    }
+    circ <- circ[[8]]
+  }
   closest
 }
+## Error in c[[8]] : subscript out of bounds ___________________________________
+##_-----------------------------------------------------------------------------
 
 do_intersect <- function(c,d){ #returns TRUE or FALSE
   sqrt((c[[2]]-d[[2]])^2 + (c[[3]]+d[[3]])^2) < c[[6]] + d[[6]] #could reformulate as discrepancy > threshold
 }
 
-geod_dist <- function(Cm,Cn,C){ #fwd_dist doesnt exist yet
+geod_dist <- function(Cm,Cn,C){ #fwd_dist doesnt rlly work atm
   min(fwd_dist(Cn,C), fwd_dist(C,Cm))
 }
 
@@ -217,20 +225,28 @@ overlap_check <- function(Cm,Cn,C){
   C_em <- Cm
   C_en <- Cn
   obstruct <- list()
-  message("Work in progress")
-}
+  #collect circles that C intersects, if any
+  circ = Cn[[8]]
+  #while(identical(circ,Cm)==FALSE){if(do_intersect(circ,C){
+      #message("work in progress")
+    #}
+  #}
 
 circle_layout <- function(input_rad_vec, order = TRUE, try_place = TRUE){
   if (order){
     input_rad_vec = reverse(sort(input_rad_vec))
   }
   
-  circles <- "placeholder"
+  # Initialise the circles with radii (not areas) as specified in input_rad_vec, and no boundary relations.
+  circles = "placeholder"
   
+  #Taking care of "degenerate" cases when there are one or two circles
   if(length(circles) == 1){
-    circles[[2]]
-    circles[[3]]
-    circles[[6]]
+    list(
+      for(c in circles){c[[2]]},
+      for(c in circles){c[[3]]},
+      for(c in circles){c[[6]]}
+      )
   }else if(length(circles)==2){
     
     #circles[1].x = - circles[1].rad
@@ -290,10 +306,7 @@ circle_layout <- function(input_rad_vec, order = TRUE, try_place = TRUE){
       }
     }
   }
-  
-  message("[[c[[2]] for c in circles],[c[[3]] for c in circles],[c[c[[6]] for c in circles] ]")
-}
+  message("[[c[[2]] for c in circles],[c[[3]] for c in circles],[c[c[[6]] for c in circles] ]")}
 
 #for after all previous functions are done, then I will move onto the next step which is visualizing the results from the circle_layout function.
 #it will definetely be done with ggplot and also the packcircles package, with a script similar to the "simple script" in the same Repo.
-
